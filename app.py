@@ -8,8 +8,6 @@ from fastapi.middleware.cors import CORSMiddleware
 from urllib.parse import unquote
 from functools import lru_cache
 
-from sklearn.feature_extraction.text import CountVectorizer
-from sklearn.metrics.pairwise import cosine_similarity
 
 # =========================
 # APP INIT
@@ -39,17 +37,9 @@ app.add_middleware(
 with open("movies.pkl", "rb") as f:
     movies = pickle.load(f)
 
-# =========================
-# VECTOR + SIMILARITY
-# (Better: precompute in production)
-# =========================
-cv = CountVectorizer(max_features=5000, stop_words="english")
-vectors = cv.fit_transform(movies["tags"]).toarray()
-similarity = cosine_similarity(vectors)
+similarity = pickle.load(open("similarity.pkl", "rb"))
 
-# =========================
-# OMDB FETCH (CACHED)
-# =========================
+
 @lru_cache(maxsize=500)
 def fetch_movie_details(movie_title: str):
     try:
